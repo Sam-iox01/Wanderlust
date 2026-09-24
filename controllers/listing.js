@@ -4,7 +4,14 @@ const ExpressError = require('../utils/ExpressError.js');
 const mbxGeocoding = require('@mapbox/mapbox-sdk/services/geocoding');
 
 const mapBoxToken = process.env.MAP_TOKEN;
-const geoCodingClient = mbxGeocoding({ accessToken: mapBoxToken });
+const geoCodingClient = mapBoxToken ? mbxGeocoding({ accessToken: mapBoxToken }) : null;
+
+function requireGeoCodingClient() {
+    if (!geoCodingClient) {
+        throw new Error("MAP_TOKEN is not configured");
+    }
+    return geoCodingClient;
+}
 
 
 
@@ -33,7 +40,7 @@ module.exports.showListing = async (req, res) => {
     };
 
     if (!Array.isArray(listing.Geometry?.coordinates) || listing.Geometry.coordinates.length !== 2) {
-        const response = await geoCodingClient.forwardGeocode({
+        const response = await requireGeoCodingClient().forwardGeocode({
             query: `${listing.location}, ${listing.country}`,
             limit: 1
         }).send();
@@ -50,7 +57,7 @@ module.exports.showListing = async (req, res) => {
 };
 
 module.exports.createListing = async (req, res, next) => {
-   let response = await geoCodingClient.forwardGeocode({
+    let response = await requireGeoCodingClient().forwardGeocode({
   query: req.body.listing.location,
   limit: 1
 })
