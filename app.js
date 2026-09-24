@@ -77,7 +77,7 @@ const sesseionConfig = {
 };
 
 app.get('/', (req, res) => {
-    res.send("Hello World");
+    res.redirect('/listings');
 });
 
 
